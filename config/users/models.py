@@ -108,3 +108,35 @@ class Payment(models.Model):
         verbose_name = "Платеж"
         verbose_name_plural = "Платежи"
         ordering = ['-payment_date']
+
+
+class Subscription(models.Model):
+    """
+    Модель подписки пользователя на обновления курса
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        related_name="subscriptions"
+    )
+
+    course = models.ForeignKey(
+        'materials.Course',
+        on_delete=models.CASCADE,
+        verbose_name="Курс",
+        related_name="subscriptions"
+    )
+
+    subscribed_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата подписки"
+    )
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        unique_together = ['user', 'course']  # Одна подписка на курс для пользователя
+
+    def __str__(self):
+        return f"{self.user.email} подписан на {self.course.name}"

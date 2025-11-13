@@ -1,14 +1,20 @@
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework.filters import OrderingFilter
-from users.models import Payment, User
+from rest_framework.views import APIView
+from users.models import Payment, User, Subscription
 from users.serializers import (
     UserSerializer, UserDetailSerializer,
     UserRegistrationSerializer, PaymentSerializer
 )
 from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator
+
+from materials.models import Course
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -134,3 +140,34 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Автоматически привязываем пользователя при создании платежа"""
         serializer.save(user=self.request.user)
+
+
+class SubscriptionAPIView(APIView):
+    """
+    APIView для управления подпиской на курс
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course_id')
+
+        if not course_id:
+            return Response(
+                {"error": "course_id обязателен"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        course = get_object_or_404(Course, id=course_id)
+        subscription = Subscription.objects.filter(user=user, course=course)
+
+        if subscription.exists():
+            # Если подписка есть - удаляем ее
+            subscription.delete()
+            message = 'Подписка удалена'
+        else:
+            # Если подписки нет - создаем ее
+            Subscription.objects.create(user=user, course=course)
+            message = 'Подписка добавлена'
+
+        return Response({"message": message})

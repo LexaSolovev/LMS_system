@@ -6,6 +6,8 @@ from materials.serializers import CourseSerializer, LessonSerializer
 from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator, IsOwnerOrModeratorForCreate, \
     IsOwnerOrModeratorForList
 
+from users.serializers import CourseWithSubscriptionSerializer
+
 
 class LessonFilter(FilterSet):
     class Meta:
@@ -22,6 +24,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'id', 'created_at']
+
+    def get_serializer_class(self):
+        # Используем расширенный сериализатор с информацией о подписке
+        if self.action == 'retrieve':
+            return CourseWithSubscriptionSerializer
+        return CourseSerializer
 
     def get_permissions(self):
         """

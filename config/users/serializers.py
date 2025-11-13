@@ -2,6 +2,11 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from users.models import Payment, User
 
+from users.models import Subscription
+
+from materials.serializers import CourseSerializer
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -49,3 +54,31 @@ class PaymentSerializer(serializers.ModelSerializer):
             'paid_course', 'course_name', 'paid_lesson', 'lesson_name',
             'amount', 'payment_method'
         ]
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ['id', 'user', 'course', 'subscribed_at']
+        read_only_fields = ['user', 'subscribed_at']
+
+
+class CourseWithSubscriptionSerializer(CourseSerializer):
+    """
+    Расширенный сериализатор курса с информацией о подписке текущего пользователя
+    """
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta(CourseSerializer.Meta):
+        fields = CourseSerializer.Meta.fields + ['is_subscribed']
+
+    def get_is_subscribed(self, obj):
+        """
+        Проверяем, подписан ли текущий пользователь на этот курс
+        """
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Subscription.objects.filter(
+                user=request.user,
+                course=obj
+            ).exists()
+        return False
