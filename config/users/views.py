@@ -15,6 +15,7 @@ from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator
 
 from materials.models import Course
 
+from materials.paginators import LessonCoursePagination
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -105,6 +106,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     filterset_class = PaymentFilter
     ordering_fields = ['payment_date', 'amount']
     ordering = ['-payment_date']
+    pagination_class = LessonCoursePagination
 
     def get_permissions(self):
         """
