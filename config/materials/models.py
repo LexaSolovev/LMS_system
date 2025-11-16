@@ -9,6 +9,12 @@ class Course(models.Model):
         upload_to="courses/previews/", blank=True, null=True, verbose_name="Превью"
     )
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Цена"
+    )
     owner = models.ForeignKey(
         AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -37,6 +43,12 @@ class Lesson(models.Model):
     video_link = models.URLField(blank=True, null=True, verbose_name="Ссылка на видео")
     course = models.ForeignKey(
         Course, on_delete=models.CASCADE, related_name="lessons", verbose_name="Курс"
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Цена"
     )
     owner = models.ForeignKey(
         AUTH_USER_MODEL,
