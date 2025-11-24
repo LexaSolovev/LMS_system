@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework",
     'rest_framework_simplejwt',
     'drf_spectacular',
+    'django_celery_beat',
     # Custom apps
     "users",
     "materials",
@@ -159,3 +160,14 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+# Настройки Celery
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# Настройки для celery-beat
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
