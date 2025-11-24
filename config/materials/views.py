@@ -6,10 +6,14 @@ from materials.serializers import CourseSerializer, LessonSerializer
 from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator, IsOwnerOrModeratorForCreate, \
     IsOwnerOrModeratorForList
 
+from django.utils import timezone
+from datetime import timedelta
+
 from users.serializers import CourseWithSubscriptionSerializer
 
 from materials.paginators import LessonCoursePagination
 
+from materials.tasks import send_course_update_notification
 
 class LessonFilter(FilterSet):
     class Meta:
@@ -129,3 +133,21 @@ class LessonViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Автоматически назначаем владельца при создании урока"""
         serializer.save(owner=self.request.user)
+
+    def perform_update(self, serializer):
+        """
+        Переопределяем обновление для отправки уведомлений
+        """
+        instance = self.get_object()
+        old_updated_at = instance.updated_at
+
+        # Сохраняем обновления
+        super().perform_update(serializer)
+
+        # Проверяем, что курс не обновлялся более 4 часов
+        current_time = timezone.now()
+        time_diff = current_time - old_updated_at
+
+        if time_diff > timedelta(hours=4):
+            # Отправляем уведомления асинхронно
+            send_course_update_notification.delay(instance.id)
