@@ -3,7 +3,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-from materials.models import Course, Subscription
+from materials.models import Course
+from users.models import Subscription
 
 
 @shared_task
@@ -13,13 +14,15 @@ def send_course_update_notification(course_id):
     """
     try:
         course = Course.objects.get(id=course_id)
-        subscriptions = Subscription.objects.filter(course=course).select_related('user')
+        subscriptions = Subscription.objects.filter(course=course).select_related(
+            "user"
+        )
 
         emails = [sub.user.email for sub in subscriptions if sub.user.email]
 
         if emails:
             subject = f'Обновление курса "{course.name}"'
-            message = f'''
+            message = f"""
             Здравствуйте!
 
             Курс "{course.name}" был обновлен. Проверьте новые материалы!
@@ -28,7 +31,7 @@ def send_course_update_notification(course_id):
 
             С уважением,
             Команда LMS System
-            '''
+            """
 
             send_mail(
                 subject=subject,
@@ -38,7 +41,9 @@ def send_course_update_notification(course_id):
                 fail_silently=False,
             )
 
-            return f"Уведомления отправлены {len(emails)} подписчикам курса {course.name}"
+            return (
+                f"Уведомления отправлены {len(emails)} подписчикам курса {course.name}"
+            )
         return "Нет подписчиков для уведомления"
 
     except Course.DoesNotExist:
