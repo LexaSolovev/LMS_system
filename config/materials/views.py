@@ -3,8 +3,13 @@ from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from materials.models import Course, Lesson
 from materials.serializers import CourseSerializer, LessonSerializer
-from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator, IsOwnerOrModeratorForCreate, \
-    IsOwnerOrModeratorForList
+from users.permissions import (
+    IsOwner,
+    IsModerator,
+    IsOwnerOrModerator,
+    IsOwnerOrModeratorForCreate,
+    IsOwnerOrModeratorForList,
+)
 
 from django.utils import timezone
 from datetime import timedelta
@@ -15,12 +20,13 @@ from materials.paginators import LessonCoursePagination
 
 from materials.tasks import send_course_update_notification
 
+
 class LessonFilter(FilterSet):
     class Meta:
         model = Lesson
         fields = {
-            'course': ['exact'],
-            'name': ['icontains'],
+            "course": ["exact"],
+            "name": ["icontains"],
         }
 
 
@@ -28,13 +34,13 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name', 'description']
-    ordering_fields = ['name', 'id', 'created_at']
+    search_fields = ["name", "description"]
+    ordering_fields = ["name", "id", "created_at"]
     pagination_class = LessonCoursePagination
 
     def get_serializer_class(self):
         # Используем расширенный сериализатор с информацией о подписке
-        if self.action == 'retrieve':
+        if self.action == "retrieve":
             return CourseWithSubscriptionSerializer
         return CourseSerializer
 
@@ -46,13 +52,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         - Детали, обновление: владелец или модератор
         - Удаление: только владелец (модераторы не могут удалять)
         """
-        if self.action == 'create':
+        if self.action == "create":
             self.permission_classes = [IsOwnerOrModeratorForCreate]
-        elif self.action == 'list':
+        elif self.action == "list":
             self.permission_classes = [IsOwnerOrModeratorForList]
-        elif self.action in ['retrieve', 'update', 'partial_update']:
+        elif self.action in ["retrieve", "update", "partial_update"]:
             self.permission_classes = [IsOwnerOrModerator]
-        elif self.action == 'destroy':
+        elif self.action == "destroy":
             self.permission_classes = [IsOwner]  # Только владелец может удалять
         else:
             self.permission_classes = [permissions.IsAuthenticated]
@@ -71,11 +77,11 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Course.objects.none()
 
         # Модераторы видят все
-        if user.groups.filter(name='moderators').exists():
-            return Course.objects.prefetch_related('lessons').all()
+        if user.groups.filter(name="moderators").exists():
+            return Course.objects.prefetch_related("lessons").all()
 
         # Обычные пользователи видят только свои курсы
-        return Course.objects.prefetch_related('lessons').filter(owner=user)
+        return Course.objects.prefetch_related("lessons").filter(owner=user)
 
     def perform_create(self, serializer):
         """Автоматически назначаем владельца при создании курса"""
@@ -87,8 +93,8 @@ class LessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = LessonFilter
-    search_fields = ['name', 'description']
-    ordering_fields = ['name', 'id', 'created_at']
+    search_fields = ["name", "description"]
+    ordering_fields = ["name", "id", "created_at"]
     pagination_class = LessonCoursePagination
 
     def get_permissions(self):
@@ -99,13 +105,13 @@ class LessonViewSet(viewsets.ModelViewSet):
         - Детали, обновление: владелец или модератор
         - Удаление: только владелец (модераторы не могут удалять)
         """
-        if self.action == 'create':
+        if self.action == "create":
             self.permission_classes = [IsOwnerOrModeratorForCreate]
-        elif self.action == 'list':
+        elif self.action == "list":
             self.permission_classes = [IsOwnerOrModeratorForList]
-        elif self.action in ['retrieve', 'update', 'partial_update']:
+        elif self.action in ["retrieve", "update", "partial_update"]:
             self.permission_classes = [IsOwnerOrModerator]
-        elif self.action == 'destroy':
+        elif self.action == "destroy":
             self.permission_classes = [IsOwner]  # Только владелец может удалять
         else:
             self.permission_classes = [permissions.IsAuthenticated]
@@ -124,11 +130,11 @@ class LessonViewSet(viewsets.ModelViewSet):
             return Lesson.objects.none()
 
         # Модераторы видят все
-        if user.groups.filter(name='moderators').exists():
-            return Lesson.objects.select_related('course', 'owner').all()
+        if user.groups.filter(name="moderators").exists():
+            return Lesson.objects.select_related("course", "owner").all()
 
         # Обычные пользователи видят только свои уроки
-        return Lesson.objects.select_related('course', 'owner').filter(owner=user)
+        return Lesson.objects.select_related("course", "owner").filter(owner=user)
 
     def perform_create(self, serializer):
         """Автоматически назначаем владельца при создании урока"""
