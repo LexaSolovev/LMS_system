@@ -1,8 +1,9 @@
 from django.core.exceptions import ValidationError
 from urlextract import URLExtract
 
-def validate_no_external_links(value, allowed_domains=('youtube.com', 'youtu.be')):
-    """ Проверка на сторонние ссылки любого текста value"""
+
+def validate_no_external_links(value, allowed_domains=("youtube.com", "youtu.be")):
+    """Проверка на сторонние ссылки любого текста value"""
     if not value:
         return value
     url_extractor = URLExtract()
@@ -16,6 +17,6 @@ def validate_no_external_links(value, allowed_domains=('youtube.com', 'youtu.be'
         is_allowed = any(domain in url_lower for domain in allowed_domains)
 
         if not is_allowed:
-            raise ValidationError('Запрещены ссылки на сторонние ресурсы.')
+            raise ValidationError("Запрещены ссылки на сторонние ресурсы.")
 
     return value

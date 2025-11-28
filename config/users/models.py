@@ -45,94 +45,75 @@ class User(AbstractUser):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-        ('cash', 'Наличные'),
-        ('transfer', 'Перевод на счет'),
-        ('stripe', 'Stripe'),
+        ("cash", "Наличные"),
+        ("transfer", "Перевод на счет"),
+        ("stripe", "Stripe"),
     ]
 
     STATUS_CHOICES = [
-        ('pending', 'Ожидает оплаты'),
-        ('processing', 'В обработке'),
-        ('succeeded', 'Успешно'),
-        ('canceled', 'Отменено'),
-        ('failed', 'Не удалось'),
+        ("pending", "Ожидает оплаты"),
+        ("processing", "В обработке"),
+        ("succeeded", "Успешно"),
+        ("canceled", "Отменено"),
+        ("failed", "Не удалось"),
     ]
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
-        related_name="payments"
+        related_name="payments",
     )
 
-    payment_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата оплаты"
-    )
+    payment_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата оплаты")
 
     paid_course = models.ForeignKey(
-        'materials.Course',
+        "materials.Course",
         on_delete=models.CASCADE,
         verbose_name="Оплаченный курс",
         null=True,
         blank=True,
-        related_name="payments"
+        related_name="payments",
     )
 
     paid_lesson = models.ForeignKey(
-        'materials.Lesson',
+        "materials.Lesson",
         on_delete=models.CASCADE,
         verbose_name="Оплаченный урок",
         null=True,
         blank=True,
-        related_name="payments"
+        related_name="payments",
     )
 
     amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="Сумма оплаты"
+        max_digits=10, decimal_places=2, verbose_name="Сумма оплаты"
     )
 
     payment_method = models.CharField(
-        max_length=20,
-        choices=PAYMENT_METHOD_CHOICES,
-        verbose_name="Способ оплаты"
+        max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name="Способ оплаты"
     )
 
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='pending',
-        verbose_name="Статус оплаты"
+        default="pending",
+        verbose_name="Статус оплаты",
     )
 
     stripe_product_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="ID продукта в Stripe"
+        max_length=255, blank=True, null=True, verbose_name="ID продукта в Stripe"
     )
 
     stripe_price_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="ID цены в Stripe"
+        max_length=255, blank=True, null=True, verbose_name="ID цены в Stripe"
     )
 
     stripe_session_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="ID сессии в Stripe"
+        max_length=255, blank=True, null=True, verbose_name="ID сессии в Stripe"
     )
 
     stripe_payment_intent_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name="ID платежа в Stripe"
+        max_length=255, blank=True, null=True, verbose_name="ID платежа в Stripe"
     )
 
     def __str__(self):
@@ -146,41 +127,43 @@ class Payment(models.Model):
         if not self.paid_course and not self.paid_lesson:
             raise ValidationError("Должен быть указан либо курс, либо урок")
         if self.paid_course and self.paid_lesson:
-            raise ValidationError("Можно указать только курс ИЛИ урок, но не оба одновременно")
+            raise ValidationError(
+                "Можно указать только курс ИЛИ урок, но не оба одновременно"
+            )
 
     class Meta:
         verbose_name = "Платеж"
         verbose_name_plural = "Платежи"
-        ordering = ['-payment_date']
+        ordering = ["-payment_date"]
 
 
 class Subscription(models.Model):
     """
     Модель подписки пользователя на обновления курса
     """
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь",
-        related_name="subscriptions"
+        related_name="subscriptions",
     )
 
     course = models.ForeignKey(
-        'materials.Course',
+        "materials.Course",
         on_delete=models.CASCADE,
         verbose_name="Курс",
-        related_name="subscriptions"
+        related_name="subscriptions",
     )
 
     subscribed_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата подписки"
+        auto_now_add=True, verbose_name="Дата подписки"
     )
 
     class Meta:
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
-        unique_together = ['user', 'course']  # Одна подписка на курс для пользователя
+        unique_together = ["user", "course"]  # Одна подписка на курс для пользователя
 
     def __str__(self):
         return f"{self.user.email} подписан на {self.course.name}"

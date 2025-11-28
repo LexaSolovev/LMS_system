@@ -15,16 +15,13 @@ class StripeService:
         Создание продукта в Stripe
         """
         try:
-            product = stripe.Product.create(
-                name=name,
-                description=description
-            )
+            product = stripe.Product.create(name=name, description=description)
             return product
         except stripe.error.StripeError as e:
             raise Exception(f"Ошибка создания продукта в Stripe: {str(e)}")
 
     @staticmethod
-    def create_price(product_id, amount, currency='rub'):
+    def create_price(product_id, amount, currency="rub"):
         """
         Создание цены в Stripe
         amount: сумма в рублях (будет преобразована в копейки)
@@ -49,15 +46,17 @@ class StripeService:
         """
         try:
             session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[{
-                    'price': price_id,
-                    'quantity': 1,
-                }],
-                mode='payment',
+                payment_method_types=["card"],
+                line_items=[
+                    {
+                        "price": price_id,
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
                 success_url=success_url,
                 cancel_url=cancel_url,
-                metadata=metadata or {}
+                metadata=metadata or {},
             )
             return session
         except stripe.error.StripeError as e:
@@ -81,23 +80,21 @@ class StripeService:
         """
         if payment_instance.paid_course:
             item = payment_instance.paid_course
-            item_type = 'course'
+            item_type = "course"
         elif payment_instance.paid_lesson:
             item = payment_instance.paid_lesson
-            item_type = 'lesson'
+            item_type = "lesson"
         else:
             raise Exception("Не указан курс или урок для оплаты")
 
         # Создаем продукт
         product = StripeService.create_product(
-            name=item.name,
-            description=item.description
+            name=item.name, description=item.description
         )
 
         # Создаем цену
         price = StripeService.create_price(
-            product_id=product.id,
-            amount=payment_instance.amount
+            product_id=product.id, amount=payment_instance.amount
         )
 
         # Создаем сессию для оплаты
@@ -109,19 +106,19 @@ class StripeService:
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={
-                'payment_id': str(payment_instance.id),
-                'item_type': item_type,
-                'item_id': str(item.id),
-                'user_id': str(payment_instance.user.id)
-            }
+                "payment_id": str(payment_instance.id),
+                "item_type": item_type,
+                "item_id": str(item.id),
+                "user_id": str(payment_instance.user.id),
+            },
         )
 
         # Обновляем платеж данными из Stripe
         payment_instance.stripe_product_id = product.id
         payment_instance.stripe_price_id = price.id
         payment_instance.stripe_session_id = session.id
-        payment_instance.payment_method = 'stripe'
-        payment_instance.status = 'pending'
+        payment_instance.payment_method = "stripe"
+        payment_instance.status = "pending"
         payment_instance.save()
 
         return session
