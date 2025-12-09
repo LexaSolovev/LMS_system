@@ -21,7 +21,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --without dev --no-interaction --no-ansi --no-root
 
 # Копируем весь проект
-COPY ./app/
+COPY . /app/
 
 # Команда по умолчанию
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "/config/manage.py", "runserver", "0.0.0.0:8000"]
