@@ -72,7 +72,14 @@ docker-compose up -d
 # Или с пересборкой образов
 docker-compose up -d --build
 ```
+### 4. Проверка работы сервисов
+```bash
+# Просмотр логов
+docker-compose logs -f
 
+# Просмотр статуса контейнеров
+docker-compose ps
+```
 ## Локальная разработка (без docker-compose)
 ### 1. Клонирование репозитория
 
