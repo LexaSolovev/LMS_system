@@ -5,6 +5,7 @@ FROM python:3.12-slim
 RUN apt-get update && apt-get install -y \
     gcc \
     postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Создаем рабочую директорию
@@ -14,14 +15,16 @@ WORKDIR /app
 RUN pip install poetry
 
 # Копируем файлы зависимостей
-COPY pyproject.toml poetry.lock* /app/
+COPY pyproject.toml poetry.lock* ./
 
 # Настраиваем poetry
 RUN poetry config virtualenvs.create false \
     && poetry install --without dev --no-interaction --no-ansi --no-root
 
 # Копируем весь проект
-COPY . /app/
+COPY . .
+
+EXPOSE 8000
 
 # Команда по умолчанию
 CMD ["python", "/config/manage.py", "runserver", "0.0.0.0:8000"]
