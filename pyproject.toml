@@ -19,6 +19,7 @@ python-dotenv = "^1.2.1"
 celery = "^5.5.3"
 redis = "^7.1.0"
 django-celery-beat = "^2.8.1"
+psycopg2-binary = "^2.9.11"
 
 [tool.poetry.group.lint.dependencies]
 black = "^25.9.0"

@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    container_name: pg_db
+    restart: unless-stopped
+    env_file:
+      - ./config/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lms_db}
+      POSTGRES_USER: ${DB_USER:-lms_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lms_password}
+    volumes:
+     - postgres_data:/var/lib/postgresql/data
+     - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "${DB_USER:-lms_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lms-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lms_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lms-network
+
+  web:
+    build: .
+    container_name: lms_web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./config/.env
+    volumes:
+      - .:/app
+    ports:
+      - "0.0.0.0:8000:8000"
+    command: python ./config/manage.py migrate --noinput && python ./config/manage.py runserver
+    networks:
+      - lms-network
+
+  celery_worker:
+    build: .
+    container_name: lms_celery_worker
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - ./config/.env
+    volumes:
+      - .:/app
+    command: celery -A config worker --loglevel=info
+    networks:
+      - lms-network
+
+  celery_beat:
+    build: .
+    container_name: lms_celery_beat
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - db
+    env_file:
+      - ./config/.env
+    volumes:
+      - .:/app
+    command: celery -A config beat --loglevel=info
+    networks:
+      - lms-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lms-network:
+    driver: bridge
