@@ -13,7 +13,7 @@ from users.serializers import (
     UserRegistrationSerializer,
     PaymentSerializer,
 )
-from users.permissions import IsOwner, IsModerator, IsOwnerOrModerator
+from users.permissions import IsOwner, IsOwnerOrModerator
 
 from materials.models import Course, Lesson
 
@@ -195,7 +195,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=payment_data)
         serializer.is_valid(raise_exception=True)
-        payment = serializer.save()
+        serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

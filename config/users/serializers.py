@@ -98,6 +98,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         if payment.payment_method == "stripe":
             try:
                 session = StripeService.create_payment_for_course_or_lesson(payment)
+                payment.stripe_session_id = session.id
+                payment.save()
                 # URL для оплаты будет доступен через get_checkout_url
             except Exception as e:
                 # Если ошибка при создании сессии, обновляем статус
