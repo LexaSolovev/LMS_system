@@ -5,7 +5,6 @@ from materials.models import Course, Lesson
 from materials.serializers import CourseSerializer, LessonSerializer
 from users.permissions import (
     IsOwner,
-    IsModerator,
     IsOwnerOrModerator,
     IsOwnerOrModeratorForCreate,
     IsOwnerOrModeratorForList,
