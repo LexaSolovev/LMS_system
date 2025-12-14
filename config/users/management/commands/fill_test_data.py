@@ -412,6 +412,7 @@ class Command(BaseCommand):
                     "paid_lesson": paid_lesson,
                     "amount": amount,
                     "payment_method": payment_method,
+                    "payment_date": payment_date
                 }
             )
 
