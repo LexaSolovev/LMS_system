@@ -1,0 +1,1 @@
+GRANT ALL PRIVILEGES ON DATABASE lms_db TO lms_user;

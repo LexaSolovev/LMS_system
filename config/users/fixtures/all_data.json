@@ -1,0 +1,198 @@
+[
+{
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$TESTPASSWORDHASH$mockhashvalue123456789abcdefghijkl=",
+        "last_login": null,
+        "is_superuser": false,
+        "first_name": "Иван",
+        "last_name": "Петров",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-01-01T10:00:00Z",
+        "email": "user1@example.com",
+        "phone": "+79161234567",
+        "city": "Москва",
+        "avatar": ""
+    }
+},
+{
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$TESTPASSWORDHASH$mockhashvalue123456789abcdefghijkl=",
+        "last_login": null,
+        "is_superuser": false,
+        "first_name": "Мария",
+        "last_name": "Сидорова",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-01-02T11:00:00Z",
+        "email": "user2@example.com",
+        "phone": "+79167654321",
+        "city": "Санкт-Петербург",
+        "avatar": ""
+    }
+},
+{
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$TESTPASSWORDHASH$mockhashvalue123456789abcdefghijkl=",
+        "last_login": null,
+        "is_superuser": true,
+        "first_name": "Админ",
+        "last_name": "Админов",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-01-01T09:00:00Z",
+        "email": "admin@example.com",
+        "phone": "+79031112233",
+        "city": "Москва",
+        "avatar": ""
+    }
+},
+{
+    "model": "materials.course",
+    "pk": 1,
+    "fields": {
+        "name": "Python для начинающих",
+        "preview": "",
+        "description": "Базовый курс по программированию на Python"
+    }
+},
+{
+    "model": "materials.course",
+    "pk": 2,
+    "fields": {
+        "name": "Django Framework",
+        "preview": "",
+        "description": "Полный курс по веб-разработке на Django"
+    }
+},
+{
+    "model": "materials.course",
+    "pk": 3,
+    "fields": {
+        "name": "JavaScript современный",
+        "preview": "",
+        "description": "Изучение JavaScript и современных фреймворков"
+    }
+},
+{
+    "model": "materials.lesson",
+    "pk": 1,
+    "fields": {
+        "name": "Введение в Python",
+        "description": "Основы синтаксиса Python",
+        "preview": "",
+        "video_link": "https://youtube.com/watch?v=test1",
+        "course": 1
+    }
+},
+{
+    "model": "materials.lesson",
+    "pk": 2,
+    "fields": {
+        "name": "Переменные и типы данных",
+        "description": "Работа с переменными в Python",
+        "preview": "",
+        "video_link": "https://youtube.com/watch?v=test2",
+        "course": 1
+    }
+},
+{
+    "model": "materials.lesson",
+    "pk": 3,
+    "fields": {
+        "name": "Основы Django",
+        "description": "Знакомство с фреймворком Django",
+        "preview": "",
+        "video_link": "https://youtube.com/watch?v=test3",
+        "course": 2
+    }
+},
+{
+    "model": "materials.lesson",
+    "pk": 4,
+    "fields": {
+        "name": "Модели в Django",
+        "description": "Работа с моделями и базой данных",
+        "preview": "",
+        "video_link": "https://youtube.com/watch?v=test4",
+        "course": 2
+    }
+},
+{
+    "model": "materials.lesson",
+    "pk": 5,
+    "fields": {
+        "name": "JavaScript основы",
+        "description": "Синтаксис и основные конструкции",
+        "preview": "",
+        "video_link": "https://youtube.com/watch?v=test5",
+        "course": 3
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "payment_date": "2024-01-15T10:30:00Z",
+        "paid_course": 1,
+        "paid_lesson": null,
+        "amount": "5000.00",
+        "payment_method": "transfer"
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 2,
+    "fields": {
+        "user": 1,
+        "payment_date": "2024-01-16T14:20:00Z",
+        "paid_course": null,
+        "paid_lesson": 3,
+        "amount": "1000.00",
+        "payment_method": "cash"
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 3,
+    "fields": {
+        "user": 2,
+        "payment_date": "2024-01-17T09:15:00Z",
+        "paid_course": 2,
+        "paid_lesson": null,
+        "amount": "7500.00",
+        "payment_method": "transfer"
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 4,
+    "fields": {
+        "user": 2,
+        "payment_date": "2024-01-18T16:45:00Z",
+        "paid_course": null,
+        "paid_lesson": 5,
+        "amount": "1500.00",
+        "payment_method": "transfer"
+    }
+},
+{
+    "model": "users.payment",
+    "pk": 5,
+    "fields": {
+        "user": 1,
+        "payment_date": "2024-01-19T11:30:00Z",
+        "paid_course": 3,
+        "paid_lesson": null,
+        "amount": "6000.00",
+        "payment_method": "cash"
+    }
+}
+]
