@@ -115,7 +115,7 @@ jobs:
             
             # Install dependencies
             echo "📦 Installing dependencies..."
-            poetry install --no-dev
+            poetry install --without dev --no-root
             
             # Apply migrations
             echo "🗄️ Applying migrations..."
@@ -124,11 +124,7 @@ jobs:
             export DEBUG="False"
             export ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
             
-            python manage.py migrate
-            
-            # Collect static files (if any)
-            echo "📁 Collecting static files..."
-            python manage.py collectstatic --noinput 2>/dev/null || echo "No static files to collect"
+            poetry run python manage.py migrate
             
             # Restart services
             echo "🔄 Restarting services..."
