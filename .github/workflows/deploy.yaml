@@ -52,6 +52,7 @@ jobs:
           DEBUG: "True"
           ALLOWED_HOSTS: "localhost,127.0.0.1"
         run: |
+          cd config
           poetry run python manage.py test
 
   deploy:
