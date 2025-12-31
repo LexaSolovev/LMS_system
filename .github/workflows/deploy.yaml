@@ -1,0 +1,119 @@
+name: Deploy LMS System
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  DEPLOY_PATH: /home/lms/LMS_system
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          SECRET_KEY: test-secret-key-12345
+          DEBUG: "True"
+          ALLOWED_HOSTS: "localhost,127.0.0.1"
+        run: |
+          poetry run python manage.py test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+            
+            echo "🚀 Starting deployment..."
+            
+            # Go to project directory
+            cd $DEPLOY_PATH
+            
+            # Get latest changes
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+            
+            # Activate Poetry virtual environment
+            echo "🐍 Activating virtual environment..."
+            source $(poetry env info --path)/bin/activate
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            poetry install --no-dev
+            
+            # Apply migrations
+            echo "🗄️ Applying migrations..."
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
+            export SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}"
+            export DEBUG="False"
+            export ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
+            
+            python manage.py migrate
+            
+            # Collect static files (if any)
+            echo "📁 Collecting static files..."
+            python manage.py collectstatic --noinput 2>/dev/null || echo "No static files to collect"
+            
+            # Restart services
+            echo "🔄 Restarting services..."
+            sudo systemctl restart lms.service
+            sudo systemctl restart nginx
+            
+            # Check status
+            echo "✅ Checking service status..."
+            sudo systemctl status lms.service --no-pager | head -20
+            
+            echo "🎉 Deployment completed successfully!"
+            echo "🌐 Application is available at: http://${{ secrets.SSH_HOST }}"
+          EOF
